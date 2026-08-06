@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "change-world-every-second",
+	"version": "${version}",
+	"name": "change-world-every-second",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/change-world-every-second/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.flyzen.changeworldeverysecond.ChangeWorldEverySecond"
+		],
+		"client": [
+			"com.flyzen.changeworldeverysecond.client.ChangeWorldEverySecondClient"
+		]
+	},
+	"mixins": [
+		"change-world-every-second.mixins.json",
+		{
+			"config": "change-world-every-second.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
