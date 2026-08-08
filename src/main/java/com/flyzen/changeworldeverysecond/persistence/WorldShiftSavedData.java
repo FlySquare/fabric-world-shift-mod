@@ -31,8 +31,11 @@ public final class WorldShiftSavedData extends SavedData {
 	public static final Codec<WorldShiftSavedData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			WorldType.CODEC.optionalFieldOf("current_world", WorldType.OVERWORLD).forGetter(data -> data.currentWorld),
 			LOCATION_ENTRY_CODEC.listOf().optionalFieldOf("locations", List.of()).forGetter(WorldShiftSavedData::encodeLocations),
-			WorldType.CODEC.listOf().optionalFieldOf("bootstrapped_worlds", List.of()).forGetter(data -> List.copyOf(data.bootstrappedWorlds))
+			WorldType.CODEC.listOf().optionalFieldOf("bootstrapped_worlds", List.of()).forGetter(data -> List.copyOf(data.bootstrappedWorlds)),
+			Codec.INT.optionalFieldOf("mushroom_bootstrap_version", 0).forGetter(data -> data.mushroomBootstrapVersion)
 	).apply(instance, WorldShiftSavedData::fromEncoded));
+
+	public static final int MUSHROOM_BOOTSTRAP_VERSION = 2;
 
 	public static final SavedDataType<WorldShiftSavedData> TYPE = new SavedDataType<>(
 			IdentifierUtil.of("world_shift_state"),
@@ -44,27 +47,32 @@ public final class WorldShiftSavedData extends SavedData {
 	private WorldType currentWorld;
 	private final Map<UUID, Map<WorldType, PlayerLocation>> locations;
 	private final Set<WorldType> bootstrappedWorlds;
+	private int mushroomBootstrapVersion;
 
 	public WorldShiftSavedData() {
 		this.currentWorld = WorldType.OVERWORLD;
 		this.locations = new HashMap<>();
 		this.bootstrappedWorlds = new HashSet<>();
+		this.mushroomBootstrapVersion = 0;
 	}
 
 	private WorldShiftSavedData(
 			WorldType currentWorld,
 			Map<UUID, Map<WorldType, PlayerLocation>> locations,
-			Set<WorldType> bootstrappedWorlds
+			Set<WorldType> bootstrappedWorlds,
+			int mushroomBootstrapVersion
 	) {
 		this.currentWorld = currentWorld == null ? WorldType.OVERWORLD : currentWorld;
 		this.locations = locations;
 		this.bootstrappedWorlds = bootstrappedWorlds;
+		this.mushroomBootstrapVersion = mushroomBootstrapVersion;
 	}
 
 	private static WorldShiftSavedData fromEncoded(
 			WorldType currentWorld,
 			List<LocationEntry> locationEntries,
-			List<WorldType> bootstrapped
+			List<WorldType> bootstrapped,
+			int mushroomBootstrapVersion
 	) {
 		Map<UUID, Map<WorldType, PlayerLocation>> locations = new HashMap<>();
 		for (LocationEntry entry : locationEntries) {
@@ -72,7 +80,7 @@ public final class WorldShiftSavedData extends SavedData {
 					.put(entry.worldType(), entry.location());
 		}
 
-		return new WorldShiftSavedData(currentWorld, locations, new HashSet<>(bootstrapped));
+		return new WorldShiftSavedData(currentWorld, locations, new HashSet<>(bootstrapped), mushroomBootstrapVersion);
 	}
 
 	private List<LocationEntry> encodeLocations() {
@@ -146,6 +154,22 @@ public final class WorldShiftSavedData extends SavedData {
 		if (bootstrappedWorlds.add(worldType)) {
 			setDirty();
 		}
+	}
+
+	public void clearBootstrapped(WorldType worldType) {
+		if (bootstrappedWorlds.remove(worldType)) {
+			setDirty();
+		}
+	}
+
+	public void migrateMushroomBootstrap() {
+		if (mushroomBootstrapVersion >= MUSHROOM_BOOTSTRAP_VERSION) {
+			return;
+		}
+
+		bootstrappedWorlds.remove(WorldType.MUSHROOM_ISLAND);
+		mushroomBootstrapVersion = MUSHROOM_BOOTSTRAP_VERSION;
+		setDirty();
 	}
 
 	private record LocationEntry(UUID playerId, WorldType worldType, PlayerLocation location) {
