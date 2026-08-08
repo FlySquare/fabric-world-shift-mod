@@ -54,19 +54,28 @@ public final class DeepDarkWardenDirector {
 	}
 
 	public void onPlayersEntered(ServerLevel level) {
+		resetEncounter(level);
+	}
+
+	public void resetEncounter(ServerLevel level) {
 		if (level == null || !level.dimension().equals(DimensionKeys.DEEP_DARK)) {
 			return;
 		}
 
 		DeepDarkCavernGenerator.placeAmbientLights(level);
-
-		List<ServerPlayer> players = level.players();
-		if (players.isEmpty()) {
-			return;
+		clearWardens(level);
+		for (BlockPos pos : SPAWN_POINTS) {
+			spawnAggressiveWarden(level, pos);
 		}
+		angerWardensAtPlayers(level, level.players());
+		WorldShift.LOGGER.info("Reset Deep Dark encounter with {} wardens", TARGET_WARDEN_COUNT);
+	}
 
-		ensureWardens(level);
-		angerWardensAtPlayers(level, players);
+	private void clearWardens(ServerLevel level) {
+		AABB area = searchArea();
+		for (Warden warden : List.copyOf(level.getEntitiesOfClass(Warden.class, area))) {
+			warden.discard();
+		}
 	}
 
 	private static void clearDarkness(MinecraftServer server) {
@@ -78,14 +87,7 @@ public final class DeepDarkWardenDirector {
 	}
 
 	private void ensureWardens(ServerLevel level) {
-		AABB area = new AABB(
-				-SEARCH_RADIUS,
-				DeepDarkCavernGenerator.FLOOR_Y - 8,
-				-SEARCH_RADIUS,
-				SEARCH_RADIUS,
-				DeepDarkCavernGenerator.FLOOR_Y + DeepDarkCavernGenerator.RADIUS_Y + 8,
-				SEARCH_RADIUS
-		);
+		AABB area = searchArea();
 		List<Warden> wardens = level.getEntitiesOfClass(Warden.class, area);
 		int missing = TARGET_WARDEN_COUNT - wardens.size();
 		for (int i = 0; i < missing; i++) {
@@ -95,16 +97,11 @@ public final class DeepDarkWardenDirector {
 	}
 
 	private void angerWardensAtPlayers(ServerLevel level, List<ServerPlayer> players) {
-		AABB area = new AABB(
-				-SEARCH_RADIUS,
-				DeepDarkCavernGenerator.FLOOR_Y - 8,
-				-SEARCH_RADIUS,
-				SEARCH_RADIUS,
-				DeepDarkCavernGenerator.FLOOR_Y + DeepDarkCavernGenerator.RADIUS_Y + 8,
-				SEARCH_RADIUS
-		);
+		if (players.isEmpty()) {
+			return;
+		}
 
-		for (Warden warden : level.getEntitiesOfClass(Warden.class, area)) {
+		for (Warden warden : level.getEntitiesOfClass(Warden.class, searchArea())) {
 			ServerPlayer nearest = null;
 			double nearestDist = Double.MAX_VALUE;
 			for (ServerPlayer player : players) {
@@ -122,6 +119,17 @@ public final class DeepDarkWardenDirector {
 				armWarden(warden, nearest);
 			}
 		}
+	}
+
+	private static AABB searchArea() {
+		return new AABB(
+				-SEARCH_RADIUS,
+				DeepDarkCavernGenerator.FLOOR_Y - 8,
+				-SEARCH_RADIUS,
+				SEARCH_RADIUS,
+				DeepDarkCavernGenerator.FLOOR_Y + DeepDarkCavernGenerator.RADIUS_Y + 8,
+				SEARCH_RADIUS
+		);
 	}
 
 	public static void spawnAggressiveWarden(ServerLevel level, BlockPos pos) {

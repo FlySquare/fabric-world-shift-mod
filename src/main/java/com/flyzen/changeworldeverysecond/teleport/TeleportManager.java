@@ -88,6 +88,11 @@ public final class TeleportManager {
 	}
 
 	public void saveAllPlayersInCurrentWorld(MinecraftServer server, WorldType currentWorld) {
+		if (currentWorld == WorldType.DEEP_DARK) {
+			WorldShiftSavedData.get(server).clearLocationsForWorld(WorldType.DEEP_DARK);
+			return;
+		}
+
 		WorldShiftSavedData data = WorldShiftSavedData.get(server);
 		ServerLevel expectedLevel = dimensionResolver.resolve(server, currentWorld);
 
@@ -114,16 +119,28 @@ public final class TeleportManager {
 		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 			teleportPlayer(server, player, targetWorld, false);
 		}
+		if (targetWorld == WorldType.DEEP_DARK) {
+			ServerLevel deepDark = dimensionResolver.resolve(server, WorldType.DEEP_DARK);
+			WorldShift.getInstance().getDeepDarkWardenDirector().resetEncounter(deepDark);
+		}
 	}
 
 	public void teleportPlayer(MinecraftServer server, ServerPlayer player, WorldType targetWorld) {
 		teleportPlayer(server, player, targetWorld, false);
+		if (targetWorld == WorldType.DEEP_DARK) {
+			ServerLevel deepDark = dimensionResolver.resolve(server, WorldType.DEEP_DARK);
+			WorldShift.getInstance().getDeepDarkWardenDirector().resetEncounter(deepDark);
+		}
 	}
 
 	public void teleportPlayer(MinecraftServer server, ServerPlayer player, WorldType targetWorld, boolean forceSpawn) {
 		Objects.requireNonNull(server, "server");
 		Objects.requireNonNull(player, "player");
 		Objects.requireNonNull(targetWorld, "targetWorld");
+
+		if (targetWorld == WorldType.DEEP_DARK) {
+			forceSpawn = true;
+		}
 
 		ServerLevel targetLevel = dimensionResolver.resolve(server, targetWorld);
 		WorldShiftSavedData data = WorldShiftSavedData.get(server);
@@ -145,11 +162,15 @@ public final class TeleportManager {
 			position = spawnLocator.findSpawn(targetLevel, targetWorld);
 			yaw = player.getYRot();
 			pitch = player.getXRot();
-			data.saveLocation(
-					player.getUUID(),
-					targetWorld,
-					new PlayerLocation(position.x, position.y, position.z, yaw, pitch)
-			);
+			if (targetWorld != WorldType.DEEP_DARK) {
+				data.saveLocation(
+						player.getUUID(),
+						targetWorld,
+						new PlayerLocation(position.x, position.y, position.z, yaw, pitch)
+				);
+			} else {
+				data.clearLocation(player.getUUID(), WorldType.DEEP_DARK);
+			}
 		}
 
 		TeleportTransition transition = new TeleportTransition(
@@ -164,9 +185,6 @@ public final class TeleportManager {
 		player.teleport(transition);
 		updateRespawnPoint(player, targetLevel, position, yaw, pitch);
 		playArrivalFx(player);
-		if (targetWorld == WorldType.DEEP_DARK) {
-			WorldShift.getInstance().getDeepDarkWardenDirector().onPlayersEntered(targetLevel);
-		}
 
 		WorldShift.LOGGER.info(
 				"Teleported {} to {} at {}, {}, {}",
