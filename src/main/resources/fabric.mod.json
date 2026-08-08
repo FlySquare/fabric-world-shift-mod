@@ -2,24 +2,25 @@
 	"schemaVersion": 1,
 	"id": "change-world-every-second",
 	"version": "${version}",
-	"name": "change-world-every-second",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "World Shift",
+	"description": "Periodically shifts players between worlds with a countdown-driven gameplay loop.",
 	"authors": [
-		"Me!"
+		"Flyzen"
 	],
-	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
-	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/change-world-every-second/icon.png",
+	"contact": {
+		"sources": "https://github.com/FlySquare/fabric-world-shift-mod",
+		"issues": "https://github.com/FlySquare/fabric-world-shift-mod/issues",
+		"homepage": "https://github.com/FlySquare/fabric-world-shift-mod"
+	},
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.flyzen.changeworldeverysecond.ChangeWorldEverySecond"
+			"com.flyzen.changeworldeverysecond.WorldShift"
 		],
 		"client": [
-			"com.flyzen.changeworldeverysecond.client.ChangeWorldEverySecondClient"
+			"com.flyzen.changeworldeverysecond.client.WorldShiftClient"
 		]
 	},
 	"mixins": [
