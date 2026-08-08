@@ -11,7 +11,7 @@ A Fabric mod for Minecraft that periodically shifts every player on the server b
 | | Link |
 | --- | --- |
 | **Latest release** | [GitHub Releases](https://github.com/FlySquare/fabric-world-shift-mod/releases/latest) |
-| **v1.0.0 jar** | [change-world-every-second-1.0.0.jar](https://github.com/FlySquare/fabric-world-shift-mod/releases/download/v1.0.0/change-world-every-second-1.0.0.jar) |
+| **Latest jar** | [change-world-every-second-1.1.0.jar](https://github.com/FlySquare/fabric-world-shift-mod/releases/download/v1.1.0/change-world-every-second-1.1.0.jar) |
 | **Source code** | [FlySquare/fabric-world-shift-mod](https://github.com/FlySquare/fabric-world-shift-mod) |
 
 1. Download the `.jar` from the latest release

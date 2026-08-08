@@ -11,7 +11,7 @@ Sunucudaki tüm oyuncuları ortak bir geri sayımla farklı dünyalar arasında 
 | | Link |
 | --- | --- |
 | **Son sürüm** | [GitHub Releases](https://github.com/FlySquare/fabric-world-shift-mod/releases/latest) |
-| **v1.0.0 jar** | [change-world-every-second-1.0.0.jar](https://github.com/FlySquare/fabric-world-shift-mod/releases/download/v1.0.0/change-world-every-second-1.0.0.jar) |
+| **Son jar** | [change-world-every-second-1.1.0.jar](https://github.com/FlySquare/fabric-world-shift-mod/releases/download/v1.1.0/change-world-every-second-1.1.0.jar) |
 | **Kaynak kod** | [FlySquare/fabric-world-shift-mod](https://github.com/FlySquare/fabric-world-shift-mod) |
 
 1. Son sürümden `.jar` dosyasını indirin
