@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: ./gradlew build --no-daemon
+
+      - name: Resolve jar
+        id: jar
+        run: |
+          JAR=$(ls build/libs/*[0-9].jar | grep -v sources | grep -v javadoc | head -n 1)
+          echo "path=$JAR" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "$JAR")" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.jar.outputs.path }}
+          name: World Shift ${{ github.ref_name }}
+          body: |
+            ## World Shift ${{ github.ref_name }}
+
+            Fabric mod for Minecraft **26.2**.
+
+            ### Install
+            1. Download `${{ steps.jar.outputs.name }}` below
+            2. Install Fabric Loader + Fabric API for 26.2
+            3. Put the jar in your `mods` folder
+
+            ### Links
+            - Repository: https://github.com/FlySquare/fabric-world-shift-mod
+            - Latest release: https://github.com/FlySquare/fabric-world-shift-mod/releases/latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
